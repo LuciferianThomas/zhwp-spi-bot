@@ -155,7 +155,9 @@ bot.login().then( async () => {
       }
     } )
     
-    _case.last_comment = signatures.sort( ( a, b ) => {
+    _case.last_comment = signatures.filter( sig => {
+      return !clerks.includes( sig.user )
+    } ).sort( ( a, b ) => {
       return b.timestamp - a.timestamp
     } )[0];
 
