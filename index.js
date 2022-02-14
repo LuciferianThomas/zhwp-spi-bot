@@ -142,11 +142,12 @@ bot.login().then( async () => {
     }
 
     console.log( "　　正在找出最後留言之用戶" )
-    let p = /\[\[(?:(?:U|User|UT|User talk|(?:用[戶户]|使用者)(?:討論)?):|(?:Special|特殊):用[戶户]貢[獻献]\/)([^|\]]+)(?:.(?!\[\[(?:(?:U|User|UT|User talk|(?:用[戶户]|使用者)(?:討論)?):|(?:Special|特殊):用[戶户]貢[獻献]\/)(?:[^|\]]+)))*? (\d{4})年(\d{1,2})月(\d{1,2})日 \([一二三四五六日]\) (\d{2}):(\d{2}) \(UTC\)/i
+    let p = /\[\[(?:(?:U|User|UT|User talk|(?:用[戶户]|使用者)(?:討論)?):|(?:Special|特殊):用[戶户]貢[獻献]\/)([^|\]\/]+)(?:.(?!\[\[(?:(?:U|User|UT|User talk|(?:用[戶户]|使用者)(?:討論)?):|(?:Special|特殊):用[戶户]貢[獻献]\/)(?:[^|\]\/]+)))*? (\d{4})年(\d{1,2})月(\d{1,2})日 \([一二三四五六日]\) (\d{2}):(\d{2}) \(UTC\)/i
 
     let signatures = ( _case.text.match( new RegExp( p.source, p.flags + "g" ) ) || [] ).map( sig => {
       // console.log( sig.match( p ) )
       let [ _, user, year, month, day, hour, min ] = sig.match( p )
+      // user = user.split(/\//g)[0]
       if ( month.length == 1 ) month = "0" + month
       if (   day.length == 1 )   day = "0" + day
       return {
@@ -239,7 +240,7 @@ bot.login().then( async () => {
     return result
   }
 
-  var job = new CronJob('0 * * * * *', async () => {
+  var job = new CronJob('0 */10 * * * *', async () => {
     let clerks = await getClerkList()
     let checkusers = await getCUList()
     clerks.push( ...checkusers )
