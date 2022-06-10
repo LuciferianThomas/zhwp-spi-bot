@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "cron": "^1.8.2",
+    "jquery": "^3.6.0",
+    "jsdom": "^19.0.0",
     "moment": "^2.29.1",
     "mwn": "^1.11.4"
   }
