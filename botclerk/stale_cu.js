@@ -48,11 +48,17 @@ module.exports = async ( bot, newReqs ) => {
         uclimit: 1
       } )
       let { usercontribs: lastContrib } = qContribs.query
+      let qLogs = await bot.query( {
+        list: 'logevents',
+        leuser: sockUser.name,
+        uclimit: 1
+      } )
+      let { logevents: lastLog } = qLogs.query
       // console.log( qContribs.query )
       // console.log( sockUser.name, lastContrib.timestamp, moment.utc( lastContrib.timestamp ) , moment().subtract( 90, 'days' ) )
-      if ( !lastContrib.length ) noEdits.push( sockUser.name )
-      else if ( moment.utc( lastContrib[0].timestamp ).isBefore( moment().subtract( 90, 'days' ) ) ) stale.push( sockUser.name )
-      else if ( moment.utc( lastContrib[0].timestamp ).isBefore( moment().subtract( 83, 'days' ) ) ) almostStale.push( sockUser.name )
+      if ( !lastContrib.length && !lastLog.length ) noEdits.push( sockUser.name )
+      else if ( moment.utc( lastContrib.length ? lastContrib[0].timestamp : '1970-01-01T00:00:00Z' ).isBefore( moment().subtract( 90, 'days' ) ) && moment.utc( lastLog.length ? lastLog[0].timestamp : '1970-01-01T00:00:00Z' ).isBefore( moment().subtract( 90, 'days' ) ) ) stale.push( sockUser.name )
+      else if ( moment.utc( lastContrib.length ? lastContrib[0].timestamp : '1970-01-01T00:00:00Z' ).isBefore( moment().subtract( 83, 'days' ) ) && moment.utc( lastLog.length ? lastLog[0].timestamp : '1970-01-01T00:00:00Z' ).isBefore( moment().subtract( 83, 'days' ) ) ) almostStale.push( sockUser.name )
     }
 
     if ( invalid.length + missing.length + noEdits.length + stale.length + almostStale.length == 0 ) continue;
@@ -62,10 +68,10 @@ module.exports = async ( bot, newReqs ) => {
     console.log( stale )
     // console.
 
-    out = "* {{clerk note|機械助理留言}}：自動檢查查核請求發現以下問題。--{{subst:User:LuciferianBot/SPIsign}} ~~~~~\n{| class=wikitable\n! style=\"width:12rem\" | 問題 !! 帳號\n"
-    if ( invalid.length ) {
-      out += `|-\n| 不能查核IP帳號間或其與註冊帳號的關聯 || ${ invalid.map( n => `{{unping|${n}}}` ).join( "、" ) }\n`
-    }
+    out = "{| class=wikitable\n! style=\"width:12em;padding-left:1.3em\" | 問題 !! 帳號\n"
+    // if ( invalid.length ) {
+    //   out += `|-\n| 不能查核IP帳號間或其與註冊帳號的關聯 || ${ invalid.map( n => `{{unping|${n}}}` ).join( "、" ) }\n`
+    // }
     if ( missing.length ) {
       out += `|-\n| 用戶未在本地註冊 || ${ missing.map( n => `{{unping|${n}}}` ).join( "、" ) }\n`
     }
@@ -78,7 +84,7 @@ module.exports = async ( bot, newReqs ) => {
     if ( almostStale.length ) {
       out += `|-\n| 上筆可見編輯已為83天前，可能'''即將'''{{stale}} || ${ almostStale.map( n => `{{unping|${n}}}` ).join( "、" ) }\n`
     }
-    out += `|}\n`
+    out += `|}\n* {{clerk note|機械助理留言}}：自動檢查查核請求發現以上問題。--{{subst:User:LuciferianBot/SPIsign}} ~~~~~\n`
     let newtext = req.text.replace( /(----<!--+ 所有留言請放在此行以上 -->)/, out + `$1` )
     let spipage = new bot.page( `Wikipedia:傀儡調查/案件/${ req.name }` )
     await spipage.edit( ( { content } ) => {

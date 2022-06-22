@@ -68,7 +68,7 @@ module.exports = async ( bot ) => {
 
     let SPIpage = new bot.page( SPIcase )
     let SPI_wt = await SPIpage.text()
-    let endorsedCase = SPI_wt.match( /=== *\d{4}年\d{1,2}月\d{1,2}日 *===(?:.|\n)+?----<!--+ 所有留言請放在此行以上 -->/g ).find( _case => _case.match( /\{\{SPI[ _]case[ _]status ?\| ?endorsed? ?\}\}/i ) )
+    let endorsedCase = SPI_wt.match( /=== *\d{4}年\d{1,2}月\d{1,2}日 *===(?:.|\n)+?----<!--+ 所有留言請放在此行以上 -->/g ).find( _case => _case.match( /\{\{SPI[ _]case[ _]status ?\| ?(?:endorsed|condefer)? ?\}\}/i ) )
     let new_wt = endorsedCase.replace( /(----<!--+ 所有留言請放在此行以上 -->)/, `${out}\n$1` )
     SPI_wt = SPI_wt.replace( endorsedCase, new_wt )
     
