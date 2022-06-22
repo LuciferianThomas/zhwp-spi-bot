@@ -7,9 +7,13 @@ const time = ( date = moment(), format = "YYYY-MM-DD HH:mm" ) => {
   return moment( date ).utcOffset( 8 ).format( format )
 }
 
-const capitalize = (s) => {
-  if (typeof s !== 'string') return ''
-  return s.charAt(0).toUpperCase() + s.slice(1)
+const capitalize = ( s ) => {
+  if ( typeof s !== 'string' ) return ''
+  return s.charAt( 0 ).toUpperCase() + s.slice( 1 )
+}
+
+const isIP = ( s ) => {
+  return /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/.test( s )
 }
 
 module.exports = async ( bot, newReqs ) => {
@@ -31,7 +35,8 @@ module.exports = async ( bot, newReqs ) => {
     let almostStale = []
     for ( var sockUser of sockUsers ) {
       if ( sockUser.invalid ) {
-        invalid.push( sockUser.name )
+        if ( !isIP( sockUser.name ) )
+          missing.push( sockUser.name )
         continue;
       }
       if ( sockUser.missing ) {
