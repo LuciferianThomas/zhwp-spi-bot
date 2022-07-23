@@ -1,4 +1,5 @@
 const { mwn } = require( 'mwn' )
+const { time, log } = require( './fn' )
 
 const bot = new mwn( {
   apiUrl: 'https://zh.wikipedia.org/w/api.php',
@@ -13,7 +14,18 @@ const bot = new mwn( {
 
 bot.login().then( async () => {
   console.log( "成功登入" )
-
-  require( './case_list' )( bot )
-  // require( './botclerk/steward_comment' )( bot )
+  log( `成功登入` )
+  try {
+    require( './case_list' )( bot )
+  }
+  catch ( e ) {
+    log( `${ e }` )
+  }
+  
+  try {
+    require( './botclerk/steward_comment' )( bot )
+  }
+  catch ( e ) {
+    log( `${ e }` )
+  }
 } )

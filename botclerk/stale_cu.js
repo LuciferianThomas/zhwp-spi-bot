@@ -3,23 +3,19 @@ const { mwn } = require( 'mwn' ),
 
 const CronJob = require('cron').CronJob;
 
-const time = ( date = moment(), format = "YYYY-MM-DD HH:mm" ) => {
-  return moment( date ).utcOffset( 8 ).format( format )
-}
-
-const capitalize = ( s ) => {
-  if ( typeof s !== 'string' ) return ''
-  return s.charAt( 0 ).toUpperCase() + s.slice( 1 )
-}
+const { time, capitalize, log } = require( '../fn' )
 
 const isIP = ( s ) => {
   return /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/.test( s )
 }
 
 module.exports = async ( bot, newReqs ) => {
+  if ( !newReqs.length ) return;
   console.log( newReqs.map( r => r.name ) )
-  return;
+  log( `發現新的CU請求：${ newReqs.map( r => r.name ) }` )
+  // return;
   for ( var req of newReqs ) {
+    log( `分析新的CU請求：${ req.name }` )
     let sockListTemplate = req.text.match( /\{\{sock[ _]list\|.*?\}\}/i )[0].split( /\|/g ).filter( m => !( /\{\{sock[ _]list|tools_link=/.test( m ) ) )
     let sockList = sockListTemplate.map( m => m.match( /^(?:\d+=)?(.*?)$/ )[1] )
     let qUsers = await bot.query( {
@@ -56,7 +52,7 @@ module.exports = async ( bot, newReqs ) => {
       let qLogs = await bot.query( {
         list: 'logevents',
         leuser: sockUser.name,
-        uclimit: 1
+        lelimit: 1
       } )
       let { logevents: lastLog } = qLogs.query
       // console.log( qContribs.query )
@@ -66,7 +62,10 @@ module.exports = async ( bot, newReqs ) => {
       else if ( moment.utc( lastContrib.length ? lastContrib[0].timestamp : '1970-01-01T00:00:00Z' ).isBefore( moment().subtract( 83, 'days' ) ) && moment.utc( lastLog.length ? lastLog[0].timestamp : '1970-01-01T00:00:00Z' ).isBefore( moment().subtract( 83, 'days' ) ) ) almostStale.push( sockUser.name )
     }
 
-    if ( invalid.length + missing.length + noEdits.length + stale.length + almostStale.length == 0 ) continue;
+    if ( invalid.length + missing.length + noEdits.length + stale.length + almostStale.length == 0 ) { 
+      log( '沒有發現帳號問題。' )
+      continue;
+    }
     console.log( invalid )
     console.log( missing )
     console.log( noEdits )
@@ -95,7 +94,7 @@ module.exports = async ( bot, newReqs ) => {
     await spipage.edit( ( { content } ) => {
       return {
         text: content.replace( req.text, newtext ),
-        summary: `機械助理提示（測試中，未正式投入使用）`,
+        summary: `[[Wikipedia:机器人/申请/LuciferianBot/4|機械人]]：機械人助理發送用戶查核請求檢查提示`,
         bot: true
       }
     } )

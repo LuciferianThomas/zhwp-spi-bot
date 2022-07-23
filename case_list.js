@@ -169,7 +169,6 @@ async function getCaseDetails( bot, title, clerks ) {
 
 function sortCases( cases ) {
   const rank = {
-    'INPROGRESS': 0,
     'ENDORSE': 1, 'ENDORSED': 1,
     'CONDEFER': 1.5,
     'RELIST': 2, 'RELISTED': 2,
@@ -177,6 +176,7 @@ function sortCases( cases ) {
     'CU': 4, 'CUREQUEST': 4, 'CHECKUSER': 4, 'REQUEST': 4,
     'ADMIN': 5, 'ADMINISTRATOR': 5,
     'CLERK': 6,
+    'CHECKING': 6.5, 'INPROGRESS': 6.5,
     'CHECKED': 7, 'COMPLETED': 7,
     'OPEN': 8,
     'CUDECLINE': 9, 'CUDECLINED': 9,
@@ -218,9 +218,10 @@ function generateCaseTable( cases ) {
     result += formatTableRow( _case )
   }
   if ( cases.length == 0 ) {
-    result += "| colspan=7 align=center style=\"font-size:150%;font-weight:bold\" | 暫無活躍傀儡調查案件"
+    result += `| colspan=7 align=center style=\"font-size:150%;font-weight:bold\" | [[File:Gillie_in_one_of_his_resting_places_(3284394473).jpg|center|400px|alt=Nightstand with an empty drawer open]]
+<div style="text-align: center; line-height: 1.5"><div style="font-size: 200%">暫無活躍傀儡調查案件</div></div>`
   }
-  result += "|}"
+  result += "\n|}"
   return result
 }
 
@@ -237,19 +238,20 @@ module.exports = async ( bot ) => {
     let cases = await getAllCases( bot, clerks )
     let newCUreq = cases.filter( _case => {
       // if ([ "CUREQUEST", "CU", "REQUEST", "CHECKUSER" ].includes( _case.status.toUpperCase() )) console.log( _case.name, moment( _case.file_time ), moment( lastDone ).startOf('minute') )
-      return [ "CUREQUEST", "CU", "REQUEST", "CHECKUSER" ].includes( _case.status.toUpperCase() ) && moment( _case.file_time ).isSameOrAfter( moment( lastDone ).startOf('minute') )
+      return [ "CUREQUEST", "CU", "REQUEST", "CHECKUSER" ].includes( _case.status.toUpperCase() )
+        && moment( _case.file_time ).isSameOrAfter( moment( lastDone ).startOf('minute') )
     } )
     let list = new bot.page( TABLE_LOCATION )
     await list.edit( ( { content } ) => {
       return {
         text: generateCaseTable( cases ),
-        summary: `更新SPI案件列表（${ cases.length }活躍提報）`,
+        summary: `[[Wikipedia:机器人/申请/LuciferianBot/3|機械人]]：更新SPI案件列表（${ cases.length }活躍提報）`,
         bot: true
       }
     } )
     console.log( `已完成更新SPI案件列表（${ cases.length }活躍提報）` )
     lastDone = new moment();
-    await require( './botclerk/stale_cu' )( bot, newCUreq.filter( x => x.name == "Example" ) )
+    await require( './botclerk/stale_cu' )( bot, newCUreq )
     return;
   }
 
